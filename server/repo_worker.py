@@ -99,6 +99,8 @@ def run_generation_flow(
             ["git", "checkout", f"origin/{scripts_source_branch}", "--", "scripts"],
             cwd=repo_path,
         )
+        # Keep scripts from main only in worktree; do not leave them staged.
+        _run(["git", "reset", "--", "scripts"], cwd=repo_path, check=False)
 
         python_bin = os.environ.get("PYTHON_BIN", "python3")
         try:
@@ -119,6 +121,7 @@ def run_generation_flow(
             outcome = _parse_generator_output(generator_run)
         finally:
             # Never keep scripts changes from origin/main in the bank branch worktree.
+            _run(["git", "reset", "--", "scripts"], cwd=repo_path, check=False)
             _run(["git", "checkout", "--", "scripts"], cwd=repo_path, check=False)
             _run(["git", "clean", "-fd", "--", "scripts"], cwd=repo_path, check=False)
 
